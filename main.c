@@ -34,6 +34,38 @@ typedef struct instruction_s
 } instruction_t;
 
 
+
+
+
+void pint(stack_c **stack, unsigned int line_number)
+{
+    if (stack == NULL || (*stack) == NULL)
+    {
+		fprintf(stderr, "L%d: can't pint, stack empty\n", line_number);
+		exit(EXIT_FAILURE);
+    }
+    printf("%d\n", (*stack)->n);
+}
+
+
+
+
+/**
+ * free_stack - Frees all nodes in the stack.
+ * @stack: Head node of the stack.
+ */
+void free_stack(stack_c *stack)
+{
+	stack_c *temp;
+
+	while (stack)
+	{
+		temp = stack->next;
+		free(stack);
+		stack = temp;
+	}
+}
+
 int is_integer(char *str)
 {
     int i;
@@ -71,7 +103,6 @@ void push(stack_c **stack, __attribute__((unused)) unsigned int line_number)
         exit(EXIT_FAILURE);      
     }
 
-    // printf("%s\n",token);
     integer_check = is_integer(token);
     if (integer_check == -1)
     {
@@ -122,6 +153,7 @@ void (*get_instruction_fn(char *str))(stack_c **stack, unsigned int line_number)
 	instruction_t opcodes[] = {
 		{"push", push},
 		{"pall", pall},
+        {"pint", pint},
 		{NULL, NULL}
 	};
 	int i;
@@ -156,7 +188,7 @@ void (*get_instruction_fn(char *str))(stack_c **stack, unsigned int line_number)
     char *token;
     char *delim = " \n"; // why?
     unsigned int line_number = 0;
-    stack_c **stack = NULL;; //why ????
+    stack_c *stack = NULL; //why ????
 
     if (argc != 2)
     {
@@ -171,14 +203,13 @@ void (*get_instruction_fn(char *str))(stack_c **stack, unsigned int line_number)
         exit(EXIT_FAILURE);
     }
 
-    read = getline(&buf, &bufsize, fp);
-    while (read != -1)
+    while (getline(&buf, &bufsize, fp) != -1)
     {
         line_number = line_number + 1;
         token = strtok(buf, delim);
         if (token == NULL)
         {
-            read = getline(&buf, &bufsize, fp); // how could i know that it keep reading the next line?
+            continue;
         }
         else
         {
@@ -187,11 +218,12 @@ void (*get_instruction_fn(char *str))(stack_c **stack, unsigned int line_number)
                 fprintf(stderr, "L%d: unknown instruction %s\n", line_number, token);
                 exit(EXIT_FAILURE);
             }
-            get_instruction_fn(token)(stack, line_number);
+            get_instruction_fn(token)(&stack, line_number);
         }
     }
 
     fclose(fp);
     free(buf);
+    free_stack(stack);
     return (0);
  }
