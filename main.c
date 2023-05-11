@@ -34,6 +34,64 @@ typedef struct instruction_s
 } instruction_t;
 
 
+void nop(__attribute__((unused)) stack_c **stack, __attribute__((unused)) unsigned int line_number)
+{
+    
+}
+
+void add(stack_c **stack, unsigned int line_number)
+{
+    int num;
+
+    if ((*stack) == NULL || (*stack)->next == NULL)
+    {
+		fprintf(stderr, "L%d: can't add, stack too short\n", line_number);
+		exit(EXIT_FAILURE);
+    }
+
+    num = (*stack)->n + ((*stack)->next)->n;
+    *stack = (*stack)->next;
+    (*stack)->prev = NULL;
+    (*stack)->n = num;
+}
+
+
+void swap(stack_c **stack, unsigned int line_number)
+{
+    int num;
+
+    if ((*stack) == NULL || (*stack)->next == NULL)
+    {
+		fprintf(stderr, "L%d: can't swap, stack too short\n", line_number);
+		exit(EXIT_FAILURE);
+    }
+
+    num = (*stack)->n;
+    (*stack)->n = ((*stack)->next)->n;
+    ((*stack)->next)->n = num;
+}
+
+
+void pop(stack_c **stack, unsigned int line_number)
+{
+    if ((*stack) == NULL)
+    {
+		fprintf(stderr, "L%d: can't pop an empty stack\n", line_number);
+		exit(EXIT_FAILURE);
+    }
+
+    if ((*stack)->next != NULL)
+        {
+            *stack = (*stack)->next;
+            (*stack)->prev = NULL;
+        }
+        else
+        {
+            *stack = NULL;
+        }
+}
+
+
 
 
 
@@ -90,11 +148,11 @@ void push(stack_c **stack, __attribute__((unused)) unsigned int line_number)
     int num;
     stack_c *new_node;
 
-    // if (stack == NULL)
-    // {
-    //     fprintf(stderr, "No stack found\n");
-    //     exit(EXIT_FAILURE);
-    // }
+    if (stack == NULL)
+    {
+        fprintf(stderr, "No stack found\n");
+        exit(EXIT_FAILURE);
+    }
 
     token = strtok(NULL, delim);
     if (token == NULL)
@@ -154,6 +212,10 @@ void (*get_instruction_fn(char *str))(stack_c **stack, unsigned int line_number)
 		{"push", push},
 		{"pall", pall},
         {"pint", pint},
+        {"pop", pop},
+        {"swap", swap},
+        {"add", add},
+        {"nop", nop},
 		{NULL, NULL}
 	};
 	int i;
